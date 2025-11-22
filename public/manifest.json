@@ -2,7 +2,7 @@
   "name": "Train Myself",
   "short_name": "Train Myself",
   "description": "记录和追踪你的练习进度",
-  "start_url": "/",
+  "start_url": "/train-myself/",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#667eea",

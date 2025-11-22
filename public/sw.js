@@ -2,21 +2,31 @@
 const CACHE_NAME = 'practice-tracker-v1'
 // 从 Service Worker 的路径推断 base path
 const BASE_PATH = self.location.pathname.replace('/sw.js', '') || '/train-myself/'
-const urlsToCache = [
-  BASE_PATH,
-  `${BASE_PATH}index.html`,
-  `${BASE_PATH}manifest.json`,
-  `${BASE_PATH}icon-192.png`,
-  `${BASE_PATH}icon-512.png`
-]
 
-// 安装 Service Worker
+// 安装 Service Worker - 使用更灵活的缓存策略
 self.addEventListener('install', (event) => {
+  // 跳过等待，立即激活新的 Service Worker
+  self.skipWaiting()
+  
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache')
-        return cache.addAll(urlsToCache)
+        // 只缓存基本文件，其他资源按需缓存
+        const essentialFiles = [
+          `${BASE_PATH}index.html`,
+          `${BASE_PATH}manifest.json`
+        ]
+        
+        // 尝试缓存基本文件，失败也不阻止安装
+        return Promise.allSettled(
+          essentialFiles.map(url => 
+            cache.add(url).catch(err => {
+              console.warn(`Failed to cache ${url}:`, err)
+              return null
+            })
+          )
+        )
       })
   )
 })
@@ -50,16 +60,21 @@ self.addEventListener('fetch', (event) => {
 // 激活 Service Worker，清理旧缓存
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName)
-            return caches.delete(cacheName)
-          }
-        })
-      )
-    })
+    Promise.all([
+      // 清理旧缓存
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME) {
+              console.log('Deleting old cache:', cacheName)
+              return caches.delete(cacheName)
+            }
+          })
+        )
+      }),
+      // 立即控制所有客户端
+      self.clients.claim()
+    ])
   )
 })
 
