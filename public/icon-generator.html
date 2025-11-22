@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图标生成器 - Train Myself</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .canvas-container {
+            text-align: center;
+            margin: 30px 0;
+            background: #667eea;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        canvas {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎸 Train Myself 图标生成器</h1>
+        <div class="info">
+            <p><strong>图标描述：</strong>Doge 在泳池用自由泳姿势弹电吉他速弹</p>
+            <p>这是一个占位图标生成器。请使用 AI 绘图工具（如 Midjourney、DALL-E、Stable Diffusion）生成实际图标，然后替换下面的占位图标。</p>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="iconCanvas" width="512" height="512"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button onclick="generateIcon(192)">生成 192x192</button>
+            <button onclick="generateIcon(512)">生成 512x512</button>
+            <button onclick="downloadIcon(192)">下载 192x192</button>
+            <button onclick="downloadIcon(512)">下载 512x512</button>
+        </div>
+        
+        <div class="info">
+            <h3>使用说明：</h3>
+            <ol>
+                <li>使用 AI 绘图工具生成图标：
+                    <ul>
+                        <li><strong>Midjourney 提示词：</strong>"doge dog swimming freestyle in pool playing electric guitar shredding, cartoon style, vibrant colors, app icon, 512x512, simple background"</li>
+                        <li><strong>DALL-E 提示词：</strong>"A cute doge dog doing freestyle swimming in a pool while playing an electric guitar with fast shredding technique, cartoon illustration, app icon design, vibrant colors, 512x512 pixels"</li>
+                    </ul>
+                </li>
+                <li>下载生成的图片</li>
+                <li>将图片重命名为 <code>icon-192.png</code> 和 <code>icon-512.png</code></li>
+                <li>放到 <code>public</code> 目录</li>
+                <li>重新构建应用：<code>npm run build</code></li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('iconCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function generateIcon(size) {
+            canvas.width = size;
+            canvas.height = size;
+            
+            // 清空画布
+            ctx.clearRect(0, 0, size, size);
+            
+            // 背景渐变（泳池蓝色）
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#4fc3f7');
+            gradient.addColorStop(1, '#29b6f6');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // 绘制波浪（泳池水波）
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = size / 50;
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, size * 0.3 + i * size * 0.2);
+                for (let x = 0; x < size; x += 10) {
+                    ctx.lineTo(x, size * 0.3 + i * size * 0.2 + Math.sin(x / 20) * 5);
+                }
+                ctx.stroke();
+            }
+            
+            // 绘制电吉他（简化版）
+            const centerX = size / 2;
+            const centerY = size / 2;
+            
+            // 吉他主体
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY + size * 0.1, size * 0.25, size * 0.15, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 吉他颈部
+            ctx.fillStyle = '#654321';
+            ctx.fillRect(centerX - size * 0.05, centerY - size * 0.2, size * 0.1, size * 0.3);
+            
+            // 琴弦
+            ctx.strokeStyle = '#C0C0C0';
+            ctx.lineWidth = size / 200;
+            for (let i = -2; i <= 2; i++) {
+                ctx.beginPath();
+                ctx.moveTo(centerX + i * size * 0.05, centerY - size * 0.1);
+                ctx.lineTo(centerX + i * size * 0.05, centerY + size * 0.2);
+                ctx.stroke();
+            }
+            
+            // 绘制 Doge 头部（简化版）
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(centerX - size * 0.15, centerY - size * 0.05, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Doge 眼睛
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(centerX - size * 0.18, centerY - size * 0.08, size * 0.02, 0, Math.PI * 2);
+            ctx.arc(centerX - size * 0.12, centerY - size * 0.08, size * 0.02, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 文字 "TM" (Train Myself)
+            ctx.fillStyle = '#fff';
+            ctx.font = `bold ${size / 8}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('TM', size * 0.85, size * 0.15);
+        }
+        
+        function downloadIcon(size) {
+            generateIcon(size);
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // 初始生成
+        generateIcon(512);
+    </script>
+</body>
+</html>
+
