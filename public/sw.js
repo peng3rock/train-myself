@@ -3,36 +3,27 @@ const CACHE_NAME = 'practice-tracker-v1'
 // 从 Service Worker 的路径推断 base path
 const BASE_PATH = self.location.pathname.replace('/sw.js', '') || '/train-myself/'
 
-// 安装 Service Worker - 使用更灵活的缓存策略
+// 安装 Service Worker - 不预缓存，使用按需缓存策略
 self.addEventListener('install', (event) => {
   // 跳过等待，立即激活新的 Service Worker
   self.skipWaiting()
   
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache')
-        // 只缓存基本文件，其他资源按需缓存
-        const essentialFiles = [
-          `${BASE_PATH}index.html`,
-          `${BASE_PATH}manifest.json`
-        ]
-        
-        // 尝试缓存基本文件，失败也不阻止安装
-        return Promise.allSettled(
-          essentialFiles.map(url => 
-            cache.add(url).catch(err => {
-              console.warn(`Failed to cache ${url}:`, err)
-              return null
-            })
-          )
-        )
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('Service Worker installed, cache opened')
+      // 不预缓存任何资源，所有资源按需缓存
+      return Promise.resolve()
+    })
   )
 })
 
 // 拦截请求，使用缓存
 self.addEventListener('fetch', (event) => {
+  // 只处理同源请求
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -40,19 +31,42 @@ self.addEventListener('fetch', (event) => {
         if (response) {
           return response
         }
+        
         // 否则从网络获取
-        return fetch(event.request).then((response) => {
-          // 检查响应是否有效
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+        return fetch(event.request)
+          .then((response) => {
+            // 检查响应是否有效
+            if (!response || response.status !== 200) {
+              return response
+            }
+            
+            // 只缓存 GET 请求
+            if (event.request.method !== 'GET') {
+              return response
+            }
+            
+            // 克隆响应用于缓存
+            const responseToCache = response.clone()
+            
+            // 异步缓存，不阻塞响应
+            caches.open(CACHE_NAME).then((cache) => {
+              try {
+                cache.put(event.request, responseToCache)
+              } catch (error) {
+                console.warn('Failed to cache:', event.request.url, error)
+              }
+            })
+            
             return response
-          }
-          // 克隆响应
-          const responseToCache = response.clone()
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache)
           })
-          return response
-        })
+          .catch((error) => {
+            console.error('Fetch failed:', event.request.url, error)
+            // 如果网络请求失败，尝试返回缓存的 index.html（对于导航请求）
+            if (event.request.mode === 'navigate') {
+              return caches.match(`${BASE_PATH}index.html`)
+            }
+            throw error
+          })
       })
   )
 })
@@ -77,4 +91,3 @@ self.addEventListener('activate', (event) => {
     ])
   )
 })
-
