@@ -10,6 +10,20 @@ export default defineConfig({
     }
   },
   publicDir: 'public',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    minify: 'terser',
+    copyPublicDir: true, // 确保 public 目录被复制
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'chart': ['chart.js']
+        }
+      }
+    }
+  },
   base: '/train-myself/',
   server: {
     host: '0.0.0.0', // 允许局域网访问
