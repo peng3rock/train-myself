@@ -1,5 +1,5 @@
 // Service Worker for PWA
-const CACHE_NAME = 'practice-tracker-v1'
+const CACHE_NAME = 'practice-tracker-v2'
 // 从 Service Worker 的路径推断 base path
 const BASE_PATH = self.location.pathname.replace('/sw.js', '') || '/train-myself/'
 

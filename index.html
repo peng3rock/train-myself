@@ -33,11 +33,23 @@
           const basePath = window.location.pathname.includes('/train-myself/') 
             ? '/train-myself/' 
             : '/'
+          
+          // 先注销旧的 Service Worker
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            registrations.forEach((registration) => {
+              registration.unregister()
+            })
+          })
+          
+          // 注册新的 Service Worker
           navigator.serviceWorker.register(`${basePath}sw.js`, {
-            scope: basePath
+            scope: basePath,
+            updateViaCache: 'none' // 强制每次检查更新
           })
             .then((registration) => {
               console.log('SW registered: ', registration)
+              // 立即检查更新
+              registration.update()
             })
             .catch((registrationError) => {
               console.log('SW registration failed: ', registrationError)
