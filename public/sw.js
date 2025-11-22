@@ -1,10 +1,11 @@
 // Service Worker for PWA
 const CACHE_NAME = 'practice-tracker-v1'
+const BASE_PATH = self.location.pathname.replace('/sw.js', '') || '/train-myself/'
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/assets/index.css',
-  '/assets/index.js'
+  BASE_PATH,
+  `${BASE_PATH}index.html`,
+  `${BASE_PATH}assets/index.css`,
+  `${BASE_PATH}assets/index.js`
 ]
 
 // 安装 Service Worker

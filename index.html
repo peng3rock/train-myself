@@ -28,7 +28,11 @@
       // 注册 Service Worker
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+          // 使用相对路径或根据当前路径判断
+          const swPath = window.location.pathname.includes('/train-myself/') 
+            ? '/train-myself/sw.js' 
+            : '/sw.js'
+          navigator.serviceWorker.register(swPath)
             .then((registration) => {
               console.log('SW registered: ', registration)
             })
