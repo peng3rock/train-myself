@@ -21,12 +21,20 @@
 ### 安装依赖
 
 ```bash
+# 推荐使用yarn（已配置代理）
+yarn install
+
+# 或使用npm
 npm install
 ```
 
 ### 启动开发服务器
 
 ```bash
+# 使用yarn
+yarn dev
+
+# 或使用npm
 npm run dev
 ```
 
