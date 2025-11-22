@@ -30,10 +30,12 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           // 使用相对路径或根据当前路径判断
-          const swPath = window.location.pathname.includes('/train-myself/') 
-            ? '/train-myself/sw.js' 
-            : '/sw.js'
-          navigator.serviceWorker.register(swPath)
+          const basePath = window.location.pathname.includes('/train-myself/') 
+            ? '/train-myself/' 
+            : '/'
+          navigator.serviceWorker.register(`${basePath}sw.js`, {
+            scope: basePath
+          })
             .then((registration) => {
               console.log('SW registered: ', registration)
             })
