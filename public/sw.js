@@ -1,11 +1,13 @@
 // Service Worker for PWA
 const CACHE_NAME = 'practice-tracker-v1'
+// 从 Service Worker 的路径推断 base path
 const BASE_PATH = self.location.pathname.replace('/sw.js', '') || '/train-myself/'
 const urlsToCache = [
   BASE_PATH,
   `${BASE_PATH}index.html`,
-  `${BASE_PATH}assets/index.css`,
-  `${BASE_PATH}assets/index.js`
+  `${BASE_PATH}manifest.json`,
+  `${BASE_PATH}icon-192.png`,
+  `${BASE_PATH}icon-512.png`
 ]
 
 // 安装 Service Worker
