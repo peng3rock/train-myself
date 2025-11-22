@@ -32,27 +32,12 @@
       // 注册 Service Worker
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          // 使用相对路径或根据当前路径判断
-          const basePath = window.location.pathname.includes('/train-myself/') 
-            ? '/train-myself/' 
-            : '/'
-          
-          // 先注销旧的 Service Worker
-          navigator.serviceWorker.getRegistrations().then((registrations) => {
-            registrations.forEach((registration) => {
-              registration.unregister()
-            })
-          })
-          
-          // 注册新的 Service Worker
-          navigator.serviceWorker.register(`${basePath}sw.js`, {
-            scope: basePath,
-            updateViaCache: 'none' // 强制每次检查更新
+          // 直接使用构建时的 base path
+          navigator.serviceWorker.register('/train-myself/sw.js', {
+            scope: '/train-myself/'
           })
             .then((registration) => {
               console.log('SW registered: ', registration)
-              // 立即检查更新
-              registration.update()
             })
             .catch((registrationError) => {
               console.log('SW registration failed: ', registrationError)
