@@ -13,17 +13,18 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import GoalCard from './GoalCard.vue'
+import type { Goal } from '../types'
 
-defineProps({
-  goals: {
-    type: Array,
-    required: true
-  }
-})
+defineProps<{
+  goals: Goal[]
+}>()
 
-defineEmits(['add-record', 'delete-goal'])
+defineEmits<{
+  'add-record': [goalId: string, record: any]
+  'delete-goal': [goalId: string]
+}>()
 </script>
 
 <style scoped>

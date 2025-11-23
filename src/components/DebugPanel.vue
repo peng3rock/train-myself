@@ -61,18 +61,18 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import { logs, clearLogs as clearLogsUtil, exportLogs as exportLogsUtil } from '../utils/logger'
+import { LogLevel } from '../types'
 
-const props = defineProps({
-  visible: {
-    type: Boolean,
-    default: false
-  }
-})
+const props = defineProps<{
+  visible?: boolean
+}>()
 
-defineEmits(['close'])
+defineEmits<{
+  'close': []
+}>()
 
 const showFilter = ref(false)
 const filterLevels = ref({
@@ -82,19 +82,19 @@ const filterLevels = ref({
   error: true
 })
 const searchText = ref('')
-const logContainer = ref(null)
+const logContainer = ref<HTMLElement | null>(null)
 
 const filteredLogs = computed(() => {
   return logs.value.filter(log => {
     // 级别筛选
-    const levelMap = {
-      'DEBUG': filterLevels.value.debug,
-      'INFO': filterLevels.value.info,
-      'WARN': filterLevels.value.warn,
-      'ERROR': filterLevels.value.error
+    const levelMap: Record<string, boolean> = {
+      [LogLevel.DEBUG]: filterLevels.value.debug,
+      [LogLevel.INFO]: filterLevels.value.info,
+      [LogLevel.WARN]: filterLevels.value.warn,
+      [LogLevel.ERROR]: filterLevels.value.error
     }
     if (!levelMap[log.level]) return false
-    
+
     // 文本搜索
     if (searchText.value) {
       const searchLower = searchText.value.toLowerCase()
@@ -102,22 +102,22 @@ const filteredLogs = computed(() => {
       const dataMatch = log.data ? JSON.stringify(log.data).toLowerCase().includes(searchLower) : false
       if (!messageMatch && !dataMatch) return false
     }
-    
+
     return true
   }).reverse() // 最新的在前
 })
 
-const formatTime = (timestamp) => {
+const formatTime = (timestamp: string): string => {
   const date = new Date(timestamp)
-  return date.toLocaleTimeString('zh-CN', { 
-    hour: '2-digit', 
-    minute: '2-digit', 
+  return date.toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit',
     second: '2-digit',
     fractionalSecondDigits: 3
-  })
+  } as Intl.DateTimeFormatOptions)
 }
 
-const formatData = (data) => {
+const formatData = (data: any): string => {
   try {
     return JSON.stringify(data, null, 2)
   } catch (e) {
@@ -125,17 +125,17 @@ const formatData = (data) => {
   }
 }
 
-const clearLogs = () => {
+const clearLogs = (): void => {
   if (confirm('确定要清空所有日志吗？')) {
     clearLogsUtil()
   }
 }
 
-const exportLogs = () => {
+const exportLogs = (): void => {
   exportLogsUtil()
 }
 
-const toggleFilter = () => {
+const toggleFilter = (): void => {
   showFilter.value = !showFilter.value
 }
 

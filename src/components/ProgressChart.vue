@@ -14,7 +14,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, watch, nextTick } from 'vue'
 import {
   Chart,
@@ -27,8 +27,10 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  type ChartConfiguration
 } from 'chart.js'
+import type { Goal } from '../types'
 
 Chart.register(
   CategoryScale,
@@ -43,18 +45,15 @@ Chart.register(
   Filler
 )
 
-const props = defineProps({
-  goal: {
-    type: Object,
-    required: true
-  }
-})
+const props = defineProps<{
+  goal: Goal
+}>()
 
-const chartCanvas = ref(null)
+const chartCanvas = ref<HTMLCanvasElement | null>(null)
 const showSubGoals = ref(false)
-let chartInstance = null
+let chartInstance: Chart | null = null
 
-const createChart = () => {
+const createChart = (): void => {
   if (!chartCanvas.value) return
 
   // 销毁旧图表
@@ -69,7 +68,7 @@ const createChart = () => {
 
   // 按日期排序
   const sortedRecords = [...records].sort((a, b) => {
-    return new Date(a.date) - new Date(b.date)
+    return new Date(a.date).getTime() - new Date(b.date).getTime()
   })
 
   const dates = sortedRecords.map(r => {

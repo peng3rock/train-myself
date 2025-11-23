@@ -92,19 +92,20 @@
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
+import type { Goal, Record } from '../types'
 import RecordModal from './RecordModal.vue'
 import ProgressChart from './ProgressChart.vue'
 
-const props = defineProps({
-  goal: {
-    type: Object,
-    required: true
-  }
-})
+const props = defineProps<{
+  goal: Goal
+}>()
 
-const emit = defineEmits(['delete', 'add-record'])
+const emit = defineEmits<{
+  'delete': [goalId: string]
+  'add-record': [data: { goalId: string; record: Omit<Record, 'id' | 'date'> }]
+}>()
 
 const showRecordModal = ref(false)
 
@@ -117,10 +118,10 @@ const progress = computed(() => {
       const values = props.goal.records.map(r => r.value || 0)
       const maxValue = values.length > 0 ? Math.max(...values) : 0
       const latestValue = values.length > 0 ? values[values.length - 1] : 0
-      const displayValue = maxValue >= props.goal.targetValue ? maxValue : latestValue
-      const percentage = Math.min((displayValue / props.goal.targetValue) * 100, 100)
-      return { 
-        total: displayValue, 
+      const displayValue = maxValue >= (props.goal.targetValue || 0) ? maxValue : latestValue
+      const percentage = Math.min((displayValue / (props.goal.targetValue || 1)) * 100, 100)
+      return {
+        total: displayValue,
         percentage,
         isFloating: true,
         maxValue,
@@ -129,28 +130,28 @@ const progress = computed(() => {
     } else {
       // 累加型：显示累计值
       const total = props.goal.records.reduce((sum, r) => sum + (r.value || 0), 0)
-      const percentage = Math.min((total / props.goal.targetValue) * 100, 100)
+      const percentage = Math.min((total / (props.goal.targetValue || 1)) * 100, 100)
       return { total, percentage, isFloating: false }
     }
   } else {
     const latestRecord = props.goal.records[props.goal.records.length - 1]
-    return { 
+    return {
       latestScore: latestRecord?.score || null,
-      recordCount: props.goal.records.length 
+      recordCount: props.goal.records.length
     }
   }
 })
 
-const formatDate = (dateString) => {
+const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
-  return date.toLocaleDateString('zh-CN', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   })
 }
 
-const handleAddRecord = (record) => {
+const handleAddRecord = (record: Omit<Record, 'id' | 'date'>): void => {
   emit('add-record', { goalId: props.goal.id, record })
   showRecordModal.value = false
 }

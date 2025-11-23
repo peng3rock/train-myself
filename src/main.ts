@@ -1,8 +1,16 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import App from './App.vue'
+import router from './router'
 import './index.css'
 
 const app = createApp(App)
+
+// 使用 Pinia
+app.use(createPinia())
+
+// 使用 VueRouter
+app.use(router)
 
 // 初始化 Capacitor（仅在原生平台）
 import('@capacitor/core').then(({ Capacitor }) => {
@@ -14,7 +22,7 @@ import('@capacitor/core').then(({ Capacitor }) => {
       // 设置状态栏样式（iOS）
       StatusBar.setStyle({ style: Style.Light })
       StatusBar.setBackgroundColor({ color: '#667eea' })
-      
+
       // 处理返回按钮（Android）
       CapacitorApp.addListener('backButton', ({ canGoBack }) => {
         if (!canGoBack) {
@@ -32,4 +40,3 @@ import('@capacitor/core').then(({ Capacitor }) => {
 })
 
 app.mount('#app')
-

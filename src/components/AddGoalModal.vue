@@ -136,14 +136,29 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
+import type { Goal, SubGoal } from '../types'
 
-const emit = defineEmits(['close', 'add'])
+const emit = defineEmits<{
+  'close': []
+  'add': [goal: Omit<Goal, 'id' | 'createdAt' | 'records' | 'completed'>]
+}>()
 
-const formData = ref({
+interface FormData {
+  name: string
+  recordType: 'target' | 'cumulative'
+  targetValue: number | string
+  unit: string
+  hasSubGoals: boolean
+  subGoals: Array<{ name: string }>
+  category: string
+  customCategory: string
+}
+
+const formData = ref<FormData>({
   name: '',
-  recordType: 'target', // 'target' | 'cumulative'
+  recordType: 'target',
   targetValue: '',
   unit: '',
   hasSubGoals: false,
@@ -152,11 +167,11 @@ const formData = ref({
   customCategory: ''
 })
 
-const addSubGoal = () => {
+const addSubGoal = (): void => {
   formData.value.subGoals.push({ name: '' })
 }
 
-const removeSubGoal = (index) => {
+const removeSubGoal = (index: number): void => {
   formData.value.subGoals.splice(index, 1)
 }
 
@@ -165,13 +180,13 @@ const finalCategory = computed(() => {
   return formData.value.customCategory.trim() || formData.value.category || '✨ 其他'
 })
 
-const handleSubmit = () => {
+const handleSubmit = (): void => {
   if (!formData.value.name.trim()) {
     alert('请输入目标名称')
     return
   }
 
-  const goalData = {
+  const goalData: Omit<Goal, 'id' | 'createdAt' | 'records' | 'completed'> = {
     name: formData.value.name.trim(),
     category: finalCategory.value,
     type: 'numeric',
@@ -180,7 +195,7 @@ const handleSubmit = () => {
     unit: formData.value.unit.trim()
   }
 
-  if (!formData.value.targetValue || formData.value.targetValue <= 0) {
+  if (!formData.value.targetValue || Number(formData.value.targetValue) <= 0) {
     alert('请输入有效的目标数值')
     return
   }
@@ -191,9 +206,12 @@ const handleSubmit = () => {
   }
 
   if (formData.value.hasSubGoals) {
-    const validSubGoals = formData.value.subGoals
+    const validSubGoals: SubGoal[] = formData.value.subGoals
       .filter(sg => sg.name.trim())
-      .map(sg => ({ name: sg.name.trim() }))
+      .map((sg, index) => ({
+        id: index.toString(),
+        name: sg.name.trim()
+      }))
     if (validSubGoals.length > 0) {
       goalData.subGoals = validSubGoals
     }

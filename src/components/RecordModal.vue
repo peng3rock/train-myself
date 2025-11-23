@@ -77,22 +77,23 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from 'vue'
+import type { Goal, Record } from '../types'
 
-const props = defineProps({
-  goal: {
-    type: Object,
-    required: true
-  }
-})
+const props = defineProps<{
+  goal: Goal
+}>()
 
-const emit = defineEmits(['close', 'add'])
+const emit = defineEmits<{
+  'close': []
+  'add': [record: Omit<Record, 'id' | 'date'>]
+}>()
 
-const value = ref('')
-const score = ref('')
+const value = ref<number | string>('')
+const score = ref<number | string>('')
 const notes = ref('')
-const subGoalValues = ref([])
+const subGoalValues = ref<(number | string)[]>([])
 
 // 初始化子目标数值数组
 watch(() => props.goal.subGoals, (subGoals) => {
@@ -103,48 +104,48 @@ watch(() => props.goal.subGoals, (subGoals) => {
   }
 }, { immediate: true })
 
-const handleSubmit = () => {
+const handleSubmit = (): void => {
   if (props.goal.type === 'numeric') {
-    if (!value.value || value.value <= 0) {
+    if (!value.value || Number(value.value) <= 0) {
       alert('请输入有效的数值')
       return
     }
-    const record = {
+    const record: Omit<Record, 'id' | 'date'> = {
       value: Number(value.value),
       notes: notes.value.trim()
     }
-    
+
     // 添加子目标数据
     if (props.goal.subGoals && props.goal.subGoals.length > 0) {
       record.subGoalValues = {}
       props.goal.subGoals.forEach((subGoal, index) => {
         if (subGoalValues.value[index] !== '' && subGoalValues.value[index] !== null) {
-          record.subGoalValues[subGoal.name] = Number(subGoalValues.value[index])
+          record.subGoalValues![subGoal.name] = Number(subGoalValues.value[index])
         }
       })
     }
-    
+
     emit('add', record)
   } else {
-    if (score.value === '' || score.value < 0) {
+    if (score.value === '' || Number(score.value) < 0) {
       alert('请输入有效的分数')
       return
     }
-    const record = {
+    const record: Omit<Record, 'id' | 'date'> = {
       score: Number(score.value),
       notes: notes.value.trim()
     }
-    
+
     // 添加子目标数据
     if (props.goal.subGoals && props.goal.subGoals.length > 0) {
       record.subGoalValues = {}
       props.goal.subGoals.forEach((subGoal, index) => {
         if (subGoalValues.value[index] !== '' && subGoalValues.value[index] !== null) {
-          record.subGoalValues[subGoal.name] = Number(subGoalValues.value[index])
+          record.subGoalValues![subGoal.name] = Number(subGoalValues.value[index])
         }
       })
     }
-    
+
     emit('add', record)
   }
 }

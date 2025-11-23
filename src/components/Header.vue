@@ -7,8 +7,10 @@
   </header>
 </template>
 
-<script setup>
-defineEmits(['add-click'])
+<script setup lang="ts">
+defineEmits<{
+  'add-click': []
+}>()
 </script>
 
 <style scoped>
