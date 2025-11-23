@@ -106,8 +106,8 @@ const handleAddRecord = (goalId, record) => {
   
   // 检查是否完成目标
   if (goal.type === 'numeric') {
-    const numericType = goal.numericType || 'cumulative'
-    if (numericType === 'floating') {
+    const recordType = goal.recordType || 'cumulative'
+    if (recordType === 'target') {
       // 浮动型：只要有一次达到目标值就算完成
       const maxValue = Math.max(...goal.records.map(r => r.value || 0))
       const wasCompleted = goal.completed

@@ -80,10 +80,10 @@ const createChart = () => {
   const datasets = []
 
   if (props.goal.type === 'numeric') {
-    const numericType = props.goal.numericType || 'cumulative'
+    const recordType = props.goal.recordType || 'cumulative'
     const values = sortedRecords.map(r => r.value || 0)
-    
-    if (numericType === 'floating') {
+
+    if (recordType === 'target') {
       // 浮动型：只显示每日值，不显示累计值
       datasets.push({
         label: '每日值',

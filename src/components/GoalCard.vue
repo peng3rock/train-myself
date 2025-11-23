@@ -110,9 +110,9 @@ const showRecordModal = ref(false)
 
 const progress = computed(() => {
   if (props.goal.type === 'numeric') {
-    const numericType = props.goal.numericType || 'cumulative'
-    
-    if (numericType === 'floating') {
+    const recordType = props.goal.recordType || 'cumulative'
+
+    if (recordType === 'target') {
       // 浮动型：显示当前最高值或最近值
       const values = props.goal.records.map(r => r.value || 0)
       const maxValue = values.length > 0 ? Math.max(...values) : 0

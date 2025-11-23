@@ -39,68 +39,46 @@
         </div>
 
         <div class="form-group">
-          <label>目标类型</label>
+          <label>记录类型</label>
           <div class="radio-group">
             <label class="radio-label">
               <input
                 type="radio"
-                value="numeric"
-                v-model="formData.type"
+                value="target"
+                v-model="formData.recordType"
               />
-              <span>数值型（累计达到某个数值）</span>
+              <span>🎯 目标值型（练琴速度等，每天记录一个目标值）</span>
             </label>
             <label class="radio-label">
               <input
                 type="radio"
-                value="task"
-                v-model="formData.type"
+                value="cumulative"
+                v-model="formData.recordType"
               />
-              <span>任务型（周期性测验打分）</span>
+              <span>📊 累加型（游泳距离等，每天累加记录总值）</span>
             </label>
           </div>
         </div>
 
-        <template v-if="formData.type === 'numeric'">
-          <div class="form-group">
-            <label>目标数值</label>
-            <input
-              type="number"
-              v-model.number="formData.targetValue"
-              placeholder="例如：100"
-              min="1"
-              required
-            />
-          </div>
-          <div class="form-group">
-            <label>单位（可选）</label>
-            <input
-              type="text"
-              v-model="formData.unit"
-              placeholder="例如：公里、次、小时、bpm等"
-            />
-          </div>
-          <div class="form-group">
-            <label>数值类型</label>
-            <div class="radio-group">
-              <label class="radio-label">
-                <input
-                  type="radio"
-                  value="cumulative"
-                  v-model="formData.numericType"
-                />
-                <span>累加型（如游泳距离，每天累加记录的总距离）</span>
-              </label>
-              <label class="radio-label">
-                <input
-                  type="radio"
-                  value="floating"
-                  v-model="formData.numericType"
-                />
-                <span>目标值型（如六连音130bpm，每天记录当天的表现值）</span>
-              </label>
-            </div>
-          </div>
-        </template>
+        <div class="form-group">
+          <label>目标数值</label>
+          <input
+            type="number"
+            v-model.number="formData.targetValue"
+            :placeholder="formData.recordType === 'target' ? '例如：130' : '例如：1000'"
+            min="1"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>单位</label>
+          <input
+            type="text"
+            v-model="formData.unit"
+            :placeholder="formData.recordType === 'target' ? '例如：bpm' : '例如：米'"
+            required
+          />
+        </div>
         <template v-else>
           <div class="form-group">
             <label>目标分数</label>
@@ -177,11 +155,9 @@ const emit = defineEmits(['close', 'add'])
 
 const formData = ref({
   name: '',
-  type: 'numeric',
+  recordType: 'target', // 'target' | 'cumulative'
   targetValue: '',
   unit: '',
-  targetScore: '',
-  numericType: 'cumulative', // 'cumulative' 或 'floating'
   hasSubGoals: false,
   subGoals: [{ name: '' }],
   category: '',
@@ -209,25 +185,21 @@ const handleSubmit = () => {
 
   const goalData = {
     name: formData.value.name.trim(),
-    category: finalCategory.value
+    category: finalCategory.value,
+    type: 'numeric',
+    recordType: formData.value.recordType,
+    targetValue: Number(formData.value.targetValue),
+    unit: formData.value.unit.trim()
   }
 
-  if (formData.value.type === 'numeric') {
-    if (!formData.value.targetValue || formData.value.targetValue <= 0) {
-      alert('请输入有效的目标数值')
-      return
-    }
-    goalData.type = 'numeric'
-    goalData.targetValue = Number(formData.value.targetValue)
-    goalData.unit = formData.value.unit.trim()
-    goalData.numericType = formData.value.numericType || 'cumulative'
-  } else {
-    if (!formData.value.targetScore || formData.value.targetScore <= 0) {
-      alert('请输入有效的目标分数')
-      return
-    }
-    goalData.type = 'task'
-    goalData.targetScore = Number(formData.value.targetScore)
+  if (!formData.value.targetValue || formData.value.targetValue <= 0) {
+    alert('请输入有效的目标数值')
+    return
+  }
+
+  if (!formData.value.unit.trim()) {
+    alert('请输入单位')
+    return
   }
 
   if (formData.value.hasSubGoals) {
