@@ -88,7 +88,7 @@
                   value="cumulative"
                   v-model="formData.numericType"
                 />
-                <span>累加型（如跑步公里数，每天累加）</span>
+                <span>累加型（如游泳距离，每天累加记录的总距离）</span>
               </label>
               <label class="radio-label">
                 <input
@@ -96,7 +96,7 @@
                   value="floating"
                   v-model="formData.numericType"
                 />
-                <span>浮动型（如速度、分数，每天记录一个值）</span>
+                <span>目标值型（如六连音130bpm，每天记录当天的表现值）</span>
               </label>
             </div>
           </div>
@@ -115,14 +115,18 @@
         </template>
 
         <div class="form-group">
-          <label>
+          <label class="subgoals-toggle">
             <input
               type="checkbox"
               v-model="formData.hasSubGoals"
             />
-            添加子目标（可选）
+            <span class="checkbox-text">添加子目标</span>
+            <span class="checkbox-desc">（如练习的不同部分：速度、准确性等）</span>
           </label>
           <div v-if="formData.hasSubGoals" class="subgoals-container">
+            <p class="subgoals-description">
+              为每个子目标单独记录数值，可以生成独立的进度曲线图
+            </p>
             <div
               v-for="(subGoal, index) in formData.subGoals"
               :key="index"
@@ -131,7 +135,7 @@
               <input
                 type="text"
                 v-model="subGoal.name"
-                :placeholder="`子目标 ${index + 1} 名称`"
+                :placeholder="`子目标 ${index + 1} 名称，例如：速度、准确性、技巧`"
                 class="subgoal-input"
               />
               <button
