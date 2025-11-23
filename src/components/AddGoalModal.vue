@@ -79,18 +79,6 @@
             required
           />
         </div>
-        <template v-else>
-          <div class="form-group">
-            <label>目标分数</label>
-            <input
-              type="number"
-              v-model.number="formData.targetScore"
-              placeholder="例如：100"
-              min="1"
-              required
-            />
-          </div>
-        </template>
 
         <div class="form-group">
           <label class="subgoals-toggle">

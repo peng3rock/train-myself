@@ -12,7 +12,7 @@ export default defineConfig({
   publicDir: 'public',
   base: '/train-myself/',
   server: {
-    host: '0.0.0.0', // 允许局域网访问
+    host: '0.0.0.0',
     port: 5173,
   },
   build: {
@@ -20,7 +20,7 @@ export default defineConfig({
     assetsDir: 'assets',
     sourcemap: false,
     minify: 'terser',
-    copyPublicDir: true, // 确保 public 目录被复制
+    copyPublicDir: true,
     rollupOptions: {
       output: {
         manualChunks: {

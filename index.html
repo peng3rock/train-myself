@@ -29,20 +29,33 @@
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
     <script>
-      // 注册 Service Worker
+      // 只在生产环境注册 Service Worker（开发环境禁用以避免干扰 Vite HMR）
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          // 直接使用构建时的 base path
-          navigator.serviceWorker.register('/train-myself/sw.js', {
-            scope: '/train-myself/'
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                              window.location.hostname === '127.0.0.1' ||
+                              window.location.port !== ''
+        
+        if (!isDevelopment) {
+          window.addEventListener('load', () => {
+            // 直接使用构建时的 base path
+            navigator.serviceWorker.register('/train-myself/sw.js', {
+              scope: '/train-myself/'
+            })
+              .then((registration) => {
+                console.log('SW registered: ', registration)
+              })
+              .catch((registrationError) => {
+                console.log('SW registration failed: ', registrationError)
+              })
           })
-            .then((registration) => {
-              console.log('SW registered: ', registration)
+        } else {
+          // 开发环境：注销已存在的 Service Worker
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            registrations.forEach((registration) => {
+              registration.unregister()
             })
-            .catch((registrationError) => {
-              console.log('SW registration failed: ', registrationError)
-            })
-        })
+          })
+        }
       }
     </script>
   </body>

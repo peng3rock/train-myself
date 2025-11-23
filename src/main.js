@@ -32,3 +32,4 @@ import('@capacitor/core').then(({ Capacitor }) => {
 })
 
 app.mount('#app')
+
