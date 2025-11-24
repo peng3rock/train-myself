@@ -1,5 +1,6 @@
 <template>
-  <div :class="['goal-card', { completed: goal.completed }]">
+  <router-link :to="`/goal/${goal.id}`" class="goal-card-link">
+    <div :class="['goal-card', { completed: goal.completed }]">
     <div class="goal-card-header">
       <div class="goal-title-section">
         <span class="goal-category">{{ goal.category || '✨ 其他' }}</span>
@@ -56,46 +57,25 @@
       <span class="meta-text">记录数：{{ goal.records.length }}</span>
     </div>
 
-    <!-- 子目标显示 -->
+    <!-- 子目标显示（简化版） -->
     <div v-if="goal.subGoals && goal.subGoals.length > 0" class="subgoals-display">
-      <div class="subgoals-title">子目标：</div>
-      <div class="subgoals-list">
-        <span
-          v-for="(subGoal, index) in goal.subGoals"
-          :key="index"
-          class="subgoal-tag"
-        >
-          {{ subGoal.name }}
-        </span>
-      </div>
+      <div class="subgoals-title">子目标：{{ goal.subGoals.length }} 个</div>
     </div>
 
-    <!-- 统计图表 -->
-    <ProgressChart
-      v-if="goal.records && goal.records.length > 0"
-      :goal="goal"
-    />
-
-    <button 
+    <router-link
+      :to="`/goal/${goal.id}`"
       class="record-button"
-      @click="showRecordModal = true"
     >
-      添加记录
-    </button>
+      查看详情
+    </router-link>
   </div>
+</router-link>
 
-  <RecordModal
-    v-if="showRecordModal"
-    :goal="goal"
-    @close="showRecordModal = false"
-    @add="handleAddRecord"
-  />
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { Goal, Record } from '../types'
-import RecordModal from './RecordModal.vue'
+import { computed } from 'vue'
+import type { Goal } from '../types'
 import ProgressChart from './ProgressChart.vue'
 
 const props = defineProps<{
@@ -104,10 +84,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'delete': [goalId: string]
-  'add-record': [data: { goalId: string; record: Omit<Record, 'id' | 'date'> }]
 }>()
-
-const showRecordModal = ref(false)
 
 const progress = computed(() => {
   if (props.goal.type === 'numeric') {
@@ -151,13 +128,15 @@ const formatDate = (dateString: string): string => {
   })
 }
 
-const handleAddRecord = (record: Omit<Record, 'id' | 'date'>): void => {
-  emit('add-record', { goalId: props.goal.id, record })
-  showRecordModal.value = false
-}
 </script>
 
 <style scoped>
+.goal-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 .goal-card {
   background: white;
   border-radius: 16px;
@@ -165,6 +144,7 @@ const handleAddRecord = (record: Omit<Record, 'id' | 'date'>): void => {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
+  cursor: pointer;
 }
 
 .goal-card:hover {

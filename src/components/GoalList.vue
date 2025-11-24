@@ -7,7 +7,6 @@
       v-for="goal in goals"
       :key="goal.id"
       :goal="goal"
-      @add-record="$emit('add-record', $event.goalId, $event.record)"
       @delete="$emit('delete-goal', $event)"
     />
   </div>
@@ -22,7 +21,6 @@ defineProps<{
 }>()
 
 defineEmits<{
-  'add-record': [goalId: string, record: any]
   'delete-goal': [goalId: string]
 }>()
 </script>
@@ -48,9 +46,33 @@ defineEmits<{
   margin: 0;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .goal-list {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .empty-state {
+    padding: 40px 20px;
+    border-radius: 12px;
+  }
+
+  .empty-text {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .goal-list {
+    gap: 12px;
+  }
+
+  .empty-state {
+    padding: 30px 16px;
+  }
+
+  .empty-text {
+    font-size: 15px;
   }
 }
 </style>

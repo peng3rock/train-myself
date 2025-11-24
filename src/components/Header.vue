@@ -53,19 +53,40 @@ defineEmits<{
   transform: translateY(0);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .header {
     padding: 16px 20px;
+    margin-bottom: 20px;
     flex-direction: column;
     gap: 16px;
+    align-items: stretch;
   }
-  
+
   .header-title {
     font-size: 24px;
+    text-align: center;
   }
-  
+
   .add-button {
     width: 100%;
+    padding: 12px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+
+  .header-title {
+    font-size: 20px;
+  }
+
+  .add-button {
+    padding: 10px;
+    font-size: 14px;
   }
 }
 </style>

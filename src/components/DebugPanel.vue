@@ -1,5 +1,8 @@
 <template>
   <div v-if="visible" class="debug-panel">
+    <div class="debug-notice">
+      🔧 开发人员调试面板 - 仅用于开发调试
+    </div>
     <div class="debug-header">
       <h3>调试日志面板</h3>
       <div class="debug-actions">
@@ -150,6 +153,16 @@ watch(() => logs.value.length, () => {
 </script>
 
 <style scoped>
+.debug-notice {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 2px solid #f59e0b;
+}
+
 .debug-panel {
   position: fixed;
   top: 0;
