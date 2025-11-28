@@ -1,82 +1,134 @@
 <template>
-  <router-link :to="`/goal/${goal.id}`" class="goal-card-link">
-    <div :class="['goal-card', { completed: goal.completed }]">
-    <div class="goal-card-header">
-      <div class="goal-title-section">
-        <span class="goal-category">{{ goal.category || '✨ 其他' }}</span>
-        <h3 class="goal-title">{{ goal.name }}</h3>
-      </div>
-      <div class="goal-header-actions">
-        <span v-if="goal.completed" class="completed-badge">已完成</span>
-        <button
-          class="delete-button"
-          @click="$emit('delete', goal.id)"
-          title="删除目标"
-        >
-          ×
-        </button>
-      </div>
-    </div>
-    
-    <div class="goal-info">
-      <template v-if="goal.type === 'numeric'">
-        <div class="progress-info">
-          <span class="progress-label">
-            {{ progress.isFloating ? '当前值' : '累计值' }}：
-          </span>
-          <span class="progress-value">
-            {{ progress.total }} / {{ goal.targetValue }} {{ goal.unit || '' }}
-          </span>
-        </div>
-        <div v-if="progress.isFloating && progress.maxValue !== progress.latestValue" class="progress-info-secondary">
-          <span class="progress-label-small">最高值：{{ progress.maxValue }} {{ goal.unit || '' }}</span>
-        </div>
-        <div class="progress-bar-container">
-          <div 
-            class="progress-bar"
-            :style="{ width: `${progress.percentage}%` }"
-          />
-        </div>
-      </template>
-      <template v-else>
-        <div class="task-info">
-          <div class="info-row">
-            <span>测验次数：</span>
-            <span class="info-value">{{ progress.recordCount }}</span>
+  <div class="goal-card-container">
+    <router-link :to="`/goal/${goal.id}`" class="goal-card-link">
+      <div :class="['goal-card', { completed: goal.completed }]">
+        <!-- 卡片头部 -->
+        <div class="card-header">
+          <div class="category-badge">
+            <span class="category-icon">{{ getCategoryIcon(goal.category) }}</span>
+            <span class="category-text">{{ goal.category || '✨ 其他' }}</span>
           </div>
-          <div v-if="progress.latestScore !== null" class="info-row">
-            <span>最近分数：</span>
-            <span class="info-value">{{ progress.latestScore }} / {{ goal.targetScore }}</span>
+
+          <div class="card-actions">
+            <button
+              v-if="goal.completed"
+              class="status-badge completed"
+              disabled
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>已完成</span>
+            </button>
+
+            <button
+              class="action-button delete"
+              @click.stop="$emit('delete', goal.id)"
+              title="删除目标"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 7L5 21M5 7L19 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
           </div>
         </div>
-      </template>
-    </div>
 
-    <div class="goal-meta">
-      <span class="meta-text">创建于：{{ formatDate(goal.createdAt) }}</span>
-      <span class="meta-text">记录数：{{ goal.records.length }}</span>
-    </div>
+        <!-- 目标标题 -->
+        <div class="card-title">
+          <h3 class="goal-title">{{ goal.name }}</h3>
+        </div>
 
-    <!-- 子目标显示（简化版） -->
-    <div v-if="goal.subGoals && goal.subGoals.length > 0" class="subgoals-display">
-      <div class="subgoals-title">子目标：{{ goal.subGoals.length }} 个</div>
-    </div>
+        <!-- 进度信息 -->
+        <div class="progress-section">
+          <template v-if="goal.type === 'numeric'">
+            <div class="progress-stats">
+              <div class="stat-item">
+                <span class="stat-label">{{ progress.isFloating ? '当前值' : '累计值' }}</span>
+                <span class="stat-value">{{ progress.total }}</span>
+              </div>
+              <div class="stat-divider">/</div>
+              <div class="stat-item">
+                <span class="stat-label">目标</span>
+                <span class="stat-value">{{ goal.targetValue }}</span>
+              </div>
+              <div class="stat-unit">{{ goal.unit || '' }}</div>
+            </div>
 
-    <router-link
-      :to="`/goal/${goal.id}`"
-      class="record-button"
-    >
-      查看详情
+            <div v-if="progress.isFloating && progress.maxValue !== progress.latestValue" class="progress-secondary">
+              <span class="secondary-label">最高值：</span>
+              <span class="secondary-value">{{ progress.maxValue }} {{ goal.unit || '' }}</span>
+            </div>
+
+            <div class="progress-visual">
+              <div class="progress-bar-bg">
+                <div
+                  class="progress-bar-fill"
+                  :class="{ completed: progress.percentage >= 100 }"
+                  :style="{ width: `${Math.min(progress.percentage, 100)}%` }"
+                />
+              </div>
+              <div class="progress-percentage">{{ Math.round(progress.percentage) }}%</div>
+            </div>
+          </template>
+
+          <template v-else>
+            <div class="task-stats">
+              <div class="stat-item">
+                <span class="stat-label">测验次数</span>
+                <span class="stat-value">{{ progress.recordCount }}</span>
+              </div>
+              <div v-if="progress.latestScore !== null" class="stat-item">
+                <span class="stat-label">最近分数</span>
+                <span class="stat-value">{{ progress.latestScore }}/{{ goal.targetScore }}</span>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- 子目标指示器 -->
+        <div v-if="goal.subGoals && goal.subGoals.length > 0" class="subgoals-indicator">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>{{ goal.subGoals.length }} 个子目标</span>
+        </div>
+
+        <!-- 卡片底部 -->
+        <div class="card-footer">
+          <div class="meta-info">
+            <span class="meta-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {{ formatDate(goal.createdAt) }}
+            </span>
+            <span class="meta-divider">•</span>
+            <span class="meta-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 12H15M9 16H15M17 8H7C5.89543 8 5 8.89543 5 10V18C5 19.1046 5.89543 20 7 20H17C18.1046 20 19 19.1046 19 18V10C19 8.89543 18.1046 8 17 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {{ goal.records.length }} 条记录
+            </span>
+          </div>
+
+          <div class="view-action">
+            <span class="view-text">查看详情</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 5L16 12L9 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- 悬停效果装饰 -->
+        <div class="card-hover-effect"></div>
+      </div>
     </router-link>
   </div>
-</router-link>
-
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Goal } from '../types'
-import ProgressChart from './ProgressChart.vue'
 
 const props = defineProps<{
   goal: Goal
@@ -123,14 +175,31 @@ const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
   return date.toLocaleDateString('zh-CN', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric'
   })
 }
 
+const getCategoryIcon = (category: string): string => {
+  const icons: Record<string, string> = {
+    '🎸 音乐': '🎸',
+    '🏃 运动': '🏃',
+    '💻 编程': '💻',
+    '📚 学习': '📚',
+    '🎨 艺术': '🎨',
+    '🗣️ 语言': '🗣️',
+    '⚽ 爱好': '⚽',
+    '✨ 其他': '✨'
+  }
+  return icons[category] || '✨'
+}
 </script>
 
 <style scoped>
+.goal-card-container {
+  position: relative;
+}
+
 .goal-card-link {
   text-decoration: none;
   color: inherit;
@@ -138,26 +207,48 @@ const formatDate = (dateString: string): string => {
 }
 
 .goal-card {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  transition: all 0.4s ease-out-expo;
+  overflow: hidden;
   cursor: pointer;
+  animation: cardSlideIn 0.5s ease-out both;
+}
+
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .goal-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .goal-card.completed {
-  border: 2px solid #10b981;
-  background: linear-gradient(to bottom, #ffffff 0%, #f0fdf4 100%);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);
 }
 
-.goal-card-header {
+.goal-card.completed:hover {
+  box-shadow: 0 12px 32px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* 卡片头部 */
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -165,185 +256,314 @@ const formatDate = (dateString: string): string => {
   gap: 12px;
 }
 
-.goal-title-section {
-  flex: 1;
-  min-width: 0;
-}
-
-.goal-header-actions {
-  display: flex;
+.category-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.goal-category {
-  display: inline-block;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 4px 10px;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  color: #667eea;
+  padding: 6px 12px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
-  margin-bottom: 6px;
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  transition: all 0.2s ease;
+}
+
+.category-icon {
+  font-size: 14px;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-badge.completed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: default;
+}
+
+.action-button.delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-button.delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+  transform: scale(1.05);
+}
+
+/* 目标标题 */
+.card-title {
+  margin-bottom: 20px;
 }
 
 .goal-title {
   font-size: 20px;
-  font-weight: 600;
-  color: #333;
+  font-weight: 700;
+  color: #0f172a;
   margin: 0;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
-.completed-badge {
-  background: #10b981;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
+/* 进度信息 */
+.progress-section {
+  margin-bottom: 20px;
 }
 
-.delete-button {
-  background: #ef4444;
-  color: white;
-  border: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.2s;
-  flex-shrink: 0;
-}
-
-.delete-button:hover {
-  background: #dc2626;
-}
-
-.goal-info {
-  margin-bottom: 16px;
-}
-
-.progress-info {
+.progress-stats {
   display: flex;
-  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
   margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.stat-divider {
+  color: #cbd5e1;
+  font-weight: 400;
+  margin: 0 4px;
+}
+
+.stat-unit {
   font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+  margin-left: 4px;
 }
 
-.progress-label {
-  color: #666;
+.progress-secondary {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 12px;
 }
 
-.progress-value {
-  font-weight: 600;
-  color: #333;
+.progress-visual {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.progress-bar-container {
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
+.progress-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
   overflow: hidden;
+  position: relative;
 }
 
-.progress-bar {
+.progress-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-  transition: width 0.3s ease;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 3px;
+  position: relative;
 }
 
-.task-info {
+.progress-bar-fill.completed {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: progress-shine 2s infinite;
+}
+
+@keyframes progress-shine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.progress-percentage {
+  font-size: 14px;
+  font-weight: 700;
+  color: #475569;
+  min-width: 40px;
+  text-align: right;
+}
+
+.task-stats {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  color: #666;
-}
-
-.info-value {
-  font-weight: 600;
-  color: #333;
-}
-
-.progress-info-secondary {
-  font-size: 12px;
-  color: #999;
-  margin-top: 4px;
-}
-
-.progress-label-small {
-  font-size: 12px;
-}
-
-.goal-meta {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
-  font-size: 12px;
-  color: #999;
-}
-
-.record-button {
-  width: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.record-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
-}
-
-.record-button:active {
-  transform: translateY(0);
-}
-
-.subgoals-display {
-  margin-bottom: 16px;
-  padding: 12px;
-  background: #f9fafb;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-}
-
-.subgoals-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.subgoals-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.subgoal-tag {
-  padding: 4px 12px;
-  background: white;
-  border: 1px solid #667eea;
-  border-radius: 12px;
-  font-size: 12px;
+/* 子目标指示器 */
+.subgoals-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(102, 126, 234, 0.08);
   color: #667eea;
-  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(102, 126, 234, 0.12);
+  margin-bottom: 16px;
+}
+
+/* 卡片底部 */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.meta-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-divider {
+  color: #cbd5e1;
+}
+
+.view-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #667eea;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.goal-card:hover .view-action {
+  color: #5a67d8;
+  transform: translateX(2px);
+}
+
+/* 悬停效果装饰 */
+.card-hover-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.02) 0%, rgba(118, 75, 162, 0.02) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.goal-card:hover .card-hover-effect {
+  opacity: 1;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .goal-card {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .goal-title {
+    font-size: 18px;
+  }
+
+  .stat-value {
+    font-size: 16px;
+  }
+
+  .progress-stats {
+    font-size: 14px;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .view-action {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .goal-card {
+    padding: 16px;
+  }
+
+  .card-header {
+    margin-bottom: 12px;
+  }
+
+  .goal-title {
+    font-size: 16px;
+  }
+
+  .progress-section {
+    margin-bottom: 16px;
+  }
+
+  .progress-stats {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .stat-unit {
+    margin-left: 0;
+  }
 }
 </style>
 

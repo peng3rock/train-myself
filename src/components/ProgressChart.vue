@@ -224,24 +224,76 @@ const createChart = (): void => {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: {
+        duration: 1000,
+        easing: 'easeOutQuart' as const
+      },
       plugins: {
         legend: {
           position: 'top',
+          labels: {
+            usePointStyle: true,
+            padding: 16,
+            font: {
+              size: 12,
+              weight: '600',
+              family: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif'
+            },
+            color: '#64748b'
+          }
         },
         tooltip: {
           mode: 'index',
           intersect: false,
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          padding: 12,
+          titleFont: {
+            size: 13,
+            weight: '600'
+          },
+          bodyFont: {
+            size: 12,
+            weight: '500'
+          },
+          borderColor: 'rgba(255, 255, 255, 0.1)',
+          borderWidth: 1,
+          cornerRadius: 12,
+          displayColors: true,
+          boxPadding: 6
         }
       },
       scales: {
         y: {
           beginAtZero: true,
           grid: {
-            color: 'rgba(0, 0, 0, 0.05)'
+            color: 'rgba(226, 232, 240, 0.5)',
+            lineWidth: 1
+          },
+          ticks: {
+            font: {
+              size: 11,
+              weight: '500'
+            },
+            color: '#94a3b8',
+            padding: 8
+          },
+          border: {
+            display: false
           }
         },
         x: {
           grid: {
+            display: false
+          },
+          ticks: {
+            font: {
+              size: 11,
+              weight: '500'
+            },
+            color: '#94a3b8',
+            padding: 8
+          },
+          border: {
             display: false
           }
         }
@@ -250,6 +302,17 @@ const createChart = (): void => {
         mode: 'nearest',
         axis: 'x',
         intersect: false
+      },
+      elements: {
+        point: {
+          radius: 4,
+          hoverRadius: 6,
+          borderWidth: 2
+        },
+        line: {
+          borderWidth: 2.5,
+          tension: 0.4
+        }
       }
     }
   })
@@ -270,46 +333,80 @@ onMounted(() => {
 
 <style scoped>
 .chart-container {
-  margin-top: 20px;
-  padding: 20px;
-  background: #f9fafb;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  margin-top: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  border: none;
 }
 
 .chart-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
 }
 
 .chart-header h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .toggle-btn {
-  padding: 6px 12px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 12px;
-  color: #666;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(102, 126, 234, 0.08);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #667eea;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.toggle-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.toggle-btn:hover::before {
+  left: 100%;
 }
 
 .toggle-btn:hover {
-  background: #f3f4f6;
-  border-color: #667eea;
-  color: #667eea;
+  background: rgba(102, 126, 234, 0.12);
+  border-color: rgba(102, 126, 234, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.toggle-btn:active {
+  transform: translateY(0);
 }
 
 canvas {
-  max-height: 300px;
+  max-height: 400px;
+  width: 100% !important;
+  height: auto !important;
 }
 </style>
 
