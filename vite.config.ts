@@ -15,6 +15,10 @@ export default defineConfig({
     host: true,        // 等价于 0.0.0.0
     port: 5173
   },
+  optimizeDeps: {
+    include: ['chart.js', 'vue', 'vue-router', 'pinia'],
+    force: false
+  },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

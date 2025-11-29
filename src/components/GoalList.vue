@@ -9,7 +9,6 @@
       :key="goal.id"
       :goal="goal"
       :style="{ animationDelay: `${index * 0.1}s` }"
-      @delete="$emit('delete-goal', $event)"
     />
   </div>
 </template>
@@ -22,9 +21,6 @@ defineProps<{
   goals: Goal[]
 }>()
 
-defineEmits<{
-  'delete-goal': [goalId: string]
-}>()
 </script>
 
 <style scoped>

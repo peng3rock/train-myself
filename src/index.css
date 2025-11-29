@@ -11,6 +11,12 @@
 
   html {
     scroll-behavior: smooth;
+    height: 100%;
+    height: -webkit-fill-available; /* iOS Safari 全屏支持 */
+  }
+
+  html {
+    height: -webkit-fill-available; /* iOS Safari 全屏支持 */
   }
 
   body {
@@ -21,9 +27,22 @@
     -moz-osx-font-smoothing: grayscale;
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #e2e8f0 50%, #cbd5e1 75%, #94a3b8 100%);
     min-height: 100vh;
+    min-height: -webkit-fill-available; /* iOS Safari 全屏支持 */
     padding: 16px;
+    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); /* 安全区域适配 */
     color: #0f172a;
     line-height: 1.5;
+    /* 防止iOS Safari的橡皮筋效果 */
+    overscroll-behavior: none;
+    /* 全屏模式下的滚动优化 */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #app {
+    width: 100%;
+    min-height: 100vh;
+    min-height: -webkit-fill-available; /* iOS Safari 全屏支持 */
+    position: relative;
   }
 
   #root {

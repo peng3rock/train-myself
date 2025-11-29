@@ -3,10 +3,9 @@
     <Header @add-click="showAddModal = true" />
 
     <main class="main-content">
-      <GoalList
-        :goals="goalsStore.goals"
-        @delete-goal="handleDeleteGoal"
-      />
+    <GoalList
+      :goals="goalsStore.goals"
+    />
     </main>
 
     <!-- 模态框 -->
@@ -32,7 +31,7 @@ const showAddModal = ref(false)
 
 // 初始化应用
 goalsStore.init()
-logInfo('应用启动')
+  logInfo('应用启动')
 
 const handleAddGoal = (goal: Omit<Goal, 'id' | 'createdAt' | 'records' | 'completed'>): void => {
   goalsStore.addGoal(goal)
@@ -40,10 +39,6 @@ const handleAddGoal = (goal: Omit<Goal, 'id' | 'createdAt' | 'records' | 'comple
   logInfo('添加新目标', { goalName: goal.name })
 }
 
-const handleDeleteGoal = (goalId: string): void => {
-  goalsStore.deleteGoal(goalId)
-  logInfo('删除目标', { goalId })
-}
 </script>
 
 <style scoped>

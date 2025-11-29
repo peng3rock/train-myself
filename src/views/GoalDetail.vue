@@ -18,6 +18,12 @@
         <div class="goal-meta">
           <span class="meta-item">创建时间：{{ formatDate(goal.createdAt) }}</span>
           <span class="meta-item">记录次数：{{ goal.records.length }}</span>
+          <span v-if="goal.deadline" class="meta-item countdown-meta" :class="countdownStatus">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ countdownText }}
+          </span>
           <span v-if="goal.completed" class="completed-status">已完成</span>
         </div>
       </div>
@@ -28,12 +34,6 @@
           @click="showRecordModal = true"
         >
           + 添加记录
-        </button>
-        <button
-          class="delete-btn"
-          @click="handleDelete"
-        >
-          删除目标
         </button>
       </div>
     </div>
@@ -188,6 +188,20 @@
       </div>
     </div>
 
+    <!-- 删除按钮 - 放在页面底部，不显眼 -->
+    <div class="delete-section">
+      <button
+        class="delete-btn-hidden"
+        @click="handleDelete"
+        title="删除目标"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 7L5 21M5 7L19 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>删除目标</span>
+      </button>
+    </div>
+
     <!-- 添加记录模态框 -->
     <RecordModal
       v-if="showRecordModal"
@@ -206,6 +220,7 @@ import { logInfo } from '../utils/logger'
 import type { Record as GoalRecord } from '../types'
 import ProgressChart from '../components/ProgressChart.vue'
 import RecordModal from '../components/RecordModal.vue'
+import { getDaysRemaining, formatDaysRemaining, getCountdownStatus } from '../utils/countdown'
 
 const route = useRoute()
 const router = useRouter()
@@ -279,6 +294,15 @@ const formatDate = (dateString: string): string => {
     minute: '2-digit'
   })
 }
+
+// 倒数日相关计算
+const daysRemaining = computed(() => {
+  if (!goal.value?.deadline) return null
+  return getDaysRemaining(goal.value.deadline)
+})
+
+const countdownText = computed(() => formatDaysRemaining(daysRemaining.value))
+const countdownStatus = computed(() => getCountdownStatus(daysRemaining.value))
 
 const handleAddRecord = (record: Omit<GoalRecord, 'id' | 'date'>): void => {
   if (goal.value) {
@@ -455,6 +479,50 @@ onMounted(() => {
   font-weight: 600;
 }
 
+.countdown-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.countdown-meta svg {
+  flex-shrink: 0;
+}
+
+.countdown-meta.normal {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.countdown-meta.warning {
+  background: rgba(251, 191, 36, 0.12);
+  color: #f59e0b;
+}
+
+.countdown-meta.urgent {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  animation: pulse-urgent 2s ease-in-out infinite;
+}
+
+.countdown-meta.expired {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+}
+
+@keyframes pulse-urgent {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .goal-actions {
   display: flex;
   gap: 16px;
@@ -496,22 +564,41 @@ onMounted(() => {
   box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
 }
 
-.delete-btn {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  padding: 16px 28px;
-  border-radius: 14px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+/* 删除按钮区域 - 不显眼 */
+.delete-section {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(226, 232, 240, 0.3);
+  text-align: center;
 }
 
-.delete-btn:hover {
-  background: rgba(239, 68, 68, 0.15);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
+.delete-btn-hidden {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.6;
+}
+
+.delete-btn-hidden:hover {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+  opacity: 1;
+}
+
+.delete-btn-hidden svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .goal-details {
@@ -1012,9 +1099,13 @@ onMounted(() => {
     flex-direction: column;
   }
 
-  .add-record-btn,
-  .delete-btn {
+  .add-record-btn {
     width: 100%;
+  }
+
+  .delete-section {
+    margin-top: 32px;
+    padding-top: 20px;
   }
 
   .detail-section {

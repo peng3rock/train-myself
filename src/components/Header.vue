@@ -14,18 +14,18 @@
           </svg>
         </div>
         <div class="title-text">
-          <h1 class="header-title">Train Myself</h1>
+      <h1 class="header-title">Train Myself</h1>
           <p class="header-subtitle">培养自我，成就更好自己</p>
         </div>
       </div>
 
       <div class="action-section">
-        <button class="add-button" @click="$emit('add-click')">
+    <button class="add-button" @click="$emit('add-click')">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span>添加目标</span>
-        </button>
+    </button>
       </div>
     </div>
 

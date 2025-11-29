@@ -11,6 +11,7 @@ export interface Goal {
   records: Record[]
   completed: boolean
   subGoals?: SubGoal[]
+  deadline?: string // 截止日期，ISO格式字符串
 }
 
 // 子目标类型

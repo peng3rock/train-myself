@@ -3,7 +3,11 @@
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h2>添加记录 - {{ goal.name }}</h2>
-        <button class="modal-close" @click="$emit('close')">×</button>
+        <button class="modal-close" @click="$emit('close')" aria-label="关闭">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
       
       <form @submit.prevent="handleSubmit" class="modal-form">
@@ -265,18 +269,22 @@ const handleSubmit = (): void => {
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
+  padding: 0;
 }
 
-.modal-close::before {
-  content: '×';
-  font-size: 20px;
-  font-weight: 300;
-  line-height: 1;
+.modal-close svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
+
 
 .modal-close:hover {
   background: rgba(239, 68, 68, 0.15);
   transform: scale(1.05);
+}
+
+.modal-close:hover svg {
+  transform: rotate(90deg);
 }
 
 .modal-form {

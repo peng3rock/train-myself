@@ -6,7 +6,7 @@
         <div class="card-header">
           <div class="category-badge">
             <span class="category-icon">{{ getCategoryIcon(goal.category) }}</span>
-            <span class="category-text">{{ goal.category || '✨ 其他' }}</span>
+            <span class="category-text">{{ getCategoryText(goal.category) }}</span>
           </div>
 
           <div class="card-actions">
@@ -19,16 +19,6 @@
                 <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <span>已完成</span>
-            </button>
-
-            <button
-              class="action-button delete"
-              @click.stop="$emit('delete', goal.id)"
-              title="删除目标"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 7L5 21M5 7L19 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
             </button>
           </div>
         </div>
@@ -93,6 +83,14 @@
           <span>{{ goal.subGoals.length }} 个子目标</span>
         </div>
 
+        <!-- 倒数日指示器 -->
+        <div v-if="goal.deadline" class="countdown-indicator" :class="countdownStatus">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>{{ countdownText }}</span>
+        </div>
+
         <!-- 卡片底部 -->
         <div class="card-footer">
           <div class="meta-info">
@@ -129,14 +127,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Goal } from '../types'
+import { getDaysRemaining, formatDaysRemaining, getCountdownStatus } from '../utils/countdown'
 
 const props = defineProps<{
   goal: Goal
 }>()
 
-const emit = defineEmits<{
-  'delete': [goalId: string]
-}>()
 
 const progress = computed(() => {
   if (props.goal.type === 'numeric') {
@@ -193,6 +189,19 @@ const getCategoryIcon = (category: string): string => {
   }
   return icons[category] || '✨'
 }
+
+const getCategoryText = (category: string): string => {
+  if (!category) return '其他'
+  // 移除开头的emoji图标，只保留文本部分
+  // 匹配开头的emoji（可能包含多个字符，如 🗣️）
+  const text = category.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\s]+/u, '').trim()
+  return text || '其他'
+}
+
+// 倒数日相关计算
+const daysRemaining = computed(() => getDaysRemaining(props.goal.deadline))
+const countdownText = computed(() => formatDaysRemaining(daysRemaining.value))
+const countdownStatus = computed(() => getCountdownStatus(daysRemaining.value))
 </script>
 
 <style scoped>
@@ -204,6 +213,16 @@ const getCategoryIcon = (category: string): string => {
   text-decoration: none;
   color: inherit;
   display: block;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  width: 100%;
+  height: 100%;
+}
+
+.goal-card-link:active {
+  opacity: 0.9;
 }
 
 .goal-card {
@@ -219,6 +238,14 @@ const getCategoryIcon = (category: string): string => {
   overflow: hidden;
   cursor: pointer;
   animation: cardSlideIn 0.5s ease-out both;
+  pointer-events: auto;
+  touch-action: manipulation;
+  z-index: 1;
+}
+
+.goal-card > * {
+  position: relative;
+  z-index: 2;
 }
 
 @keyframes cardSlideIn {
@@ -294,24 +321,6 @@ const getCategoryIcon = (category: string): string => {
   cursor: default;
 }
 
-.action-button.delete {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.action-button.delete:hover {
-  background: rgba(239, 68, 68, 0.15);
-  transform: scale(1.05);
-}
 
 /* 目标标题 */
 .card-title {
@@ -447,7 +456,61 @@ const getCategoryIcon = (category: string): string => {
   font-size: 12px;
   font-weight: 600;
   border: 1px solid rgba(102, 126, 234, 0.12);
+  margin-bottom: 12px;
+}
+
+/* 倒数日指示器 */
+.countdown-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
   margin-bottom: 16px;
+  border: 1px solid;
+  transition: all 0.3s ease;
+}
+
+.countdown-indicator svg {
+  flex-shrink: 0;
+}
+
+.countdown-indicator.normal {
+  background: rgba(59, 130, 246, 0.08);
+  color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.15);
+}
+
+.countdown-indicator.warning {
+  background: rgba(251, 191, 36, 0.1);
+  color: #f59e0b;
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+.countdown-indicator.urgent {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
+  animation: pulse-urgent 2s ease-in-out infinite;
+}
+
+.countdown-indicator.expired {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+  border-color: rgba(107, 114, 128, 0.2);
+}
+
+@keyframes pulse-urgent {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
 }
 
 /* 卡片底部 */
@@ -485,6 +548,14 @@ const getCategoryIcon = (category: string): string => {
   font-size: 13px;
   font-weight: 600;
   transition: all 0.2s ease;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+}
+
+.view-text {
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .goal-card:hover .view-action {
@@ -503,6 +574,7 @@ const getCategoryIcon = (category: string): string => {
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
+  z-index: 0;
 }
 
 .goal-card:hover .card-hover-effect {
